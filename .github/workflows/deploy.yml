@@ -22,8 +22,9 @@ jobs:
         run: npm install
 
       - name: Deploy to Server
-        env:
+         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_SSH_INFO: ${{ secrets.SERVER_SSH_INFO }}
         run: |
           # Cài đặt SSH Key
           mkdir -p ~/.ssh
@@ -31,7 +32,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
 
           # Kết nối SSH và triển khai mã
-          ssh -o StrictHostKeyChecking=no user@your-server-ip << 'EOF'
+          ssh -o StrictHostKeyChecking=no $SERVER_SSH_INFO << 'EOF'
             cd /path/to/your/project
             git pull origin main
             npm install

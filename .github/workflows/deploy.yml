@@ -1,40 +1,13 @@
-name: Deploy to Server
-
-on:
+name: Hello world
+on: 
   push:
-    branches:
-      - main  # Chạy workflow khi có sự thay đổi trên nhánh main
-
+    branches: [main]
 jobs:
-  deploy:
+  say_hello:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Deploy to Server
-         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_SSH_INFO: ${{ secrets.SERVER_SSH_INFO }}
-        run: |
-          # Cài đặt SSH Key
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
-          # Kết nối SSH và triển khai mã
-          ssh -o StrictHostKeyChecking=no $SERVER_SSH_INFO << 'EOF'
-            cd /path/to/your/project
-            git pull origin main
-            npm install
-            pm2 restart app  # Hoặc lệnh triển khai của bạn
-          EOF
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Say hello
+      run: echo "Today=$(date)" >> $GITHUB_ENV
+      run: echo "Hello world, $Today"

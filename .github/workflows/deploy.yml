@@ -2,32 +2,22 @@ name: Deploy to Ubuntu Server
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
+    - name: Deploy to Ubuntu Server
+      uses: appleboy/ssh-action@master
       with:
-        node-version: '14'
-
-    - name: Install dependencies
-      run: npm install
-
-    - name: Deploy to server
-      env:
-        HOST: ${{ secrets.SERVER_HOST }}
-        USERNAME: ${{ secrets.SERVER_USERNAME }}
-        SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
-      run: |
-        echo "${SSH_KEY}" > ssh_key
-        chmod 600 ssh_key
-        rsync -avz -e "ssh -i ssh_key -o StrictHostKeyChecking=no" ./dist/ ${USERNAME}@${HOST}:/path/to/deploy
-        ssh -i ssh_key -o StrictHostKeyChecking=no ${USERNAME}@${HOST} 'cd /path/to/deploy && npm install --production && pm2 restart all'
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: 22
+        script: |
+          cd /home/ci_cd
+          git pull origin main
+          npm install
+          pm2 reload ci_cd

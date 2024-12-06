@@ -1,10 +1,36 @@
-name: Hello world
-on: 
+name: Deploy to Ubuntu Server
+
+on:
   push:
-    branches: [main]
+    branches:
+      - main
+
 jobs:
-  say_hello:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - run: echo "Today=$(date)" >> $GITHUB_ENV
-      - run: echo Hello world, $Today
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build project
+      run: npm run build
+
+    - name: Deploy to server
+      env:
+        HOST: ${{ secrets.SERVER_HOST }}
+        USERNAME: ${{ secrets.SERVER_USERNAME }}
+        SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+      run: |
+        echo "${SSH_KEY}" > ssh_key
+        chmod 600 ssh_key
+        rsync -avz -e "ssh -i ssh_key -o StrictHostKeyChecking=no" ./dist/ ${USERNAME}@${HOST}:/path/to/deploy
+        ssh -i ssh_key -o StrictHostKeyChecking=no ${USERNAME}@${HOST} 'cd /path/to/deploy && npm install --production && pm2 restart all'
